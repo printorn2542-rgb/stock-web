@@ -92,7 +92,17 @@
       color: transparent;
     }
 
-    .neon-line { position: relative; }
+    .neon-line {
+      position: relative;
+      display: inline-block;
+      padding-top: .15rem;
+      padding-bottom: .45rem;
+      line-height: 1.28;
+    }
+
+    section[id] {
+      scroll-margin-top: 96px;
+    }
     .neon-line::after {
       content: '';
       position: absolute;
@@ -351,7 +361,7 @@
       <div class="mb-7 flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
         <div>
           <p class="mb-2 text-sm font-semibold uppercase tracking-[0.28em] text-cyan-200">Professional Dashboard</p>
-          <h2 class="neon-line text-3xl font-extrabold text-white">กราฟราคาและภาพรวมตลาด</h2>
+          <h2 class="neon-line text-2xl font-extrabold leading-snug text-white sm:text-3xl">กราฟราคาและภาพรวมตลาด</h2>
           <p class="mt-5 max-w-2xl text-violet-200">เลือกหุ้นเพื่อดูกราฟ 30 วัน ถ้า API candles ใช้ไม่ได้ ระบบจะสร้างกราฟ Demo จากราคาล่าสุดให้ดูชั่วคราว</p>
         </div>
         <div class="flex flex-col gap-3 sm:flex-row">
@@ -401,7 +411,7 @@
       <div class="mb-7 flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
         <div>
           <p class="mb-2 text-sm font-semibold uppercase tracking-[0.28em] text-cyan-200">Watchlist</p>
-          <h2 class="neon-line text-3xl font-extrabold text-white">หุ้นที่ติดตาม</h2>
+          <h2 class="neon-line text-2xl font-extrabold leading-snug text-white sm:text-3xl">หุ้นที่ติดตาม</h2>
           <p class="mt-5 max-w-2xl text-violet-200">เพิ่ม/ลบหุ้นได้ ข้อมูลจะจำถาวรใน Browser เดิมด้วย Local Storage ถ้าต้องการจำข้ามเครื่องต้องต่อฐานข้อมูล เช่น Supabase ภายหลัง</p>
         </div>
 
@@ -439,7 +449,7 @@
       <div class="mb-7 flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
         <div>
           <p class="mb-2 text-sm font-semibold uppercase tracking-[0.28em] text-violet-200">TradingView Style</p>
-          <h2 class="neon-line text-3xl font-extrabold text-white">ตารางหุ้นแบบโปร</h2>
+          <h2 class="neon-line text-2xl font-extrabold leading-snug text-white sm:text-3xl">ตารางหุ้นแบบโปร</h2>
           <p class="mt-5 max-w-2xl text-violet-200">เรียงข้อมูลเหมือน Watchlist จริง ดูราคา %Change, Score, Risk, Options Rank, Signal และกดดูกราฟได้ทันที</p>
         </div>
       </div>
@@ -511,7 +521,7 @@
       <div class="mb-7 flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
         <div>
           <p class="mb-2 text-sm font-semibold uppercase tracking-[0.28em] text-pink-200">Options Radar</p>
-          <h2 class="neon-line text-3xl font-extrabold text-white">หุ้นน่าเล่น Option วันนี้</h2>
+          <h2 class="neon-line text-2xl font-extrabold leading-snug text-white sm:text-3xl">หุ้นน่าเล่น Option วันนี้</h2>
           <p class="mt-5 max-w-2xl text-violet-200">คัดจาก Momentum, ข่าว, Volatility และ Options Rank พร้อมกลยุทธ์ Call / Put / Spread แบบจำกัดความเสี่ยง</p>
         </div>
         <div class="chip px-4 py-2 text-sm text-violet-100">
