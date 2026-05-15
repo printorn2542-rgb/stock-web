@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="ดูหุ้น วิเคราะห์หุ้นอเมริกา พร้อมข่าวรายวันและสัญญาณสำหรับ Options บน Vercel" />
-  <title>ดูหุ้น วิเคราะห์หุ้น อเมริกา</title>
+  <meta name="description" content="Dashboard วิเคราะห์หุ้นอเมริกา หุ้น Options และกราฟราคาแบบ Midnight Purple บน Vercel" />
+  <title>Midnight Stock AI Dashboard</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -26,8 +26,6 @@
       --color-danger: #fb7185;
       --color-warning: #fbbf24;
       --border-color: rgba(168, 85, 247, 0.28);
-      --border-radius: 0.75rem;
-      --shadow-sm: 0 1px 3px rgba(0,0,0,.18);
       --shadow-md: 0 18px 48px rgba(2,0,12,.38);
       --font-thai: 'Noto Sans Thai', 'Sarabun', sans-serif;
       --font-display: 'Orbitron', 'Noto Sans Thai', sans-serif;
@@ -76,7 +74,7 @@
     }
 
     .glass-card:hover {
-      transform: translateY(-4px);
+      transform: translateY(-3px);
       border-color: rgba(34,211,238,.42);
       box-shadow: 0 0 38px rgba(124,58,237,.34);
     }
@@ -170,6 +168,56 @@
     .status-down { color: var(--color-danger); background: rgba(251,113,133,.12); border-color: rgba(251,113,133,.26); }
     .status-neutral { color: var(--color-warning); background: rgba(251,191,36,.12); border-color: rgba(251,191,36,.26); }
 
+    .table-wrap {
+      overflow-x: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(124,58,237,.9) rgba(255,255,255,.05);
+    }
+    .table-wrap::-webkit-scrollbar { height: 8px; }
+    .table-wrap::-webkit-scrollbar-thumb { background: rgba(124,58,237,.9); border-radius: 999px; }
+
+    .market-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 10px;
+      min-width: 980px;
+    }
+    .market-table th {
+      padding: 0 14px 8px;
+      text-align: left;
+      font-size: 12px;
+      color: #b8aee5;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .market-table td {
+      padding: 15px 14px;
+      background: rgba(255,255,255,.045);
+      border-top: 1px solid rgba(255,255,255,.08);
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      white-space: nowrap;
+    }
+    .market-table td:first-child {
+      border-left: 1px solid rgba(255,255,255,.08);
+      border-top-left-radius: 16px;
+      border-bottom-left-radius: 16px;
+    }
+    .market-table td:last-child {
+      border-right: 1px solid rgba(255,255,255,.08);
+      border-top-right-radius: 16px;
+      border-bottom-right-radius: 16px;
+    }
+    .market-table tr:hover td { background: rgba(124,58,237,.15); }
+
+    .chart-card {
+      min-height: 355px;
+    }
+    #priceChart {
+      width: 100%;
+      height: 260px;
+      display: block;
+    }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
         animation-duration: .01ms !important;
@@ -193,8 +241,8 @@
           <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
         </span>
         <span>
-          <span class="block text-sm text-violet-200">Vercel Web App</span>
-          <strong class="block text-lg font-extrabold tracking-tight text-white">ดูหุ้น วิเคราะห์หุ้น อเมริกา</strong>
+          <span class="block text-sm text-violet-200">Realtime Market Dashboard</span>
+          <strong class="block text-lg font-extrabold tracking-tight text-white">Midnight Stock AI</strong>
         </span>
       </a>
 
@@ -203,9 +251,10 @@
       </button>
 
       <div id="mainMenu" class="hidden absolute left-4 right-4 top-[76px] rounded-2xl border border-white/10 bg-[#100922]/95 p-4 shadow-2xl md:static md:flex md:items-center md:gap-2 md:border-0 md:bg-transparent md:p-0 md:shadow-none">
-        <a href="#watchlist" class="block rounded-xl px-4 py-2 text-sm text-violet-100 transition hover:bg-white/10">หุ้นหลัก</a>
-        <a href="#news" class="block rounded-xl px-4 py-2 text-sm text-violet-100 transition hover:bg-white/10">ข่าวรายวัน</a>
-        <a href="#options" class="block rounded-xl px-4 py-2 text-sm text-violet-100 transition hover:bg-white/10">หุ้น Options</a>
+        <a href="#dashboard" class="block rounded-xl px-4 py-2 text-sm text-violet-100 transition hover:bg-white/10">Dashboard</a>
+        <a href="#watchlist" class="block rounded-xl px-4 py-2 text-sm text-violet-100 transition hover:bg-white/10">Watchlist</a>
+        <a href="#marketTable" class="block rounded-xl px-4 py-2 text-sm text-violet-100 transition hover:bg-white/10">ตารางหุ้น</a>
+        <a href="#options" class="block rounded-xl px-4 py-2 text-sm text-violet-100 transition hover:bg-white/10">Options วันนี้</a>
         <button id="refreshBtn" class="btn-primary mt-3 w-full rounded-xl px-4 py-2 text-sm font-semibold md:mt-0 md:w-auto" type="button">
           <i class="fa-solid fa-rotate-right mr-2" aria-hidden="true"></i>รีเฟรชข้อมูล
         </button>
@@ -214,65 +263,82 @@
   </header>
 
   <main id="main">
-    <section id="hero" class="mx-auto grid max-w-7xl items-center gap-8 px-4 py-10 lg:grid-cols-[1.05fr_.95fr] lg:px-8 lg:py-16">
-      <div>
-        <div class="mb-5 inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-4 py-2 text-sm text-cyan-100">
-          <span class="relative flex h-2.5 w-2.5">
-            <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-300 opacity-75"></span>
-            <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-cyan-300"></span>
-          </span>
-          ดึงข้อมูลผ่าน Vercel API เพื่อซ่อน API Token
-        </div>
-        <h1 class="max-w-4xl text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl">
-          วิเคราะห์หุ้นอเมริกาแบบ <span class="gradient-text">Midnight Purple</span>
-        </h1>
-        <p class="mt-5 max-w-2xl text-base leading-8 text-violet-100 sm:text-lg">
-          หน้าเว็บนี้เป็นไฟล์ index.html สำหรับ Vercel โดยเรียกข้อมูลราคาหุ้นและข่าวผ่านไฟล์ API ฝั่ง Server ในโฟลเดอร์ /api แทนการฝัง API Token ในหน้าเว็บ
-        </p>
-        <div class="mt-7 flex flex-col gap-3 sm:flex-row">
-          <a href="#watchlist" class="btn-primary rounded-2xl px-6 py-3 text-center font-bold">
-            <i class="fa-solid fa-bolt mr-2" aria-hidden="true"></i>เริ่มวิเคราะห์
-          </a>
-        </div>
-        <p class="mt-4 text-xs leading-6 text-violet-300">
-          ข้อมูลและคะแนนวิเคราะห์เป็นตัวช่วยเบื้องต้น ไม่ใช่คำแนะนำการลงทุน Options และหุ้นขนาดเล็กมีความเสี่ยงสูง
-        </p>
+    <section id="hero" class="mx-auto max-w-7xl px-4 py-8 lg:px-8 lg:py-12">
+      <div class="grid gap-6 lg:grid-cols-[1.1fr_.9fr]">
+        <article class="glass-card overflow-hidden p-6 lg:p-8">
+          <div class="mb-5 flex flex-wrap items-center gap-3">
+            <span class="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-4 py-2 text-sm text-cyan-100">
+              <span class="relative flex h-2.5 w-2.5">
+                <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-300 opacity-75"></span>
+                <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-cyan-300"></span>
+              </span>
+              Auto refresh ทุก 60 วินาที
+            </span>
+            <span id="marketMode" class="chip px-4 py-2 text-sm text-violet-100">Vercel API Mode</span>
+          </div>
+
+          <h1 class="max-w-4xl text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl">
+            US Stock & Options <span class="gradient-text">AI Dashboard</span>
+          </h1>
+          <p class="mt-5 max-w-2xl text-base leading-8 text-violet-100 sm:text-lg">
+            ดูราคาหุ้น วิเคราะห์ข่าว ตารางหุ้นสไตล์ TradingView กราฟราคา และคัดหุ้นน่าเล่น Option วันนี้ พร้อมกลยุทธ์ Call / Put / Spread แบบอัปเดตใกล้ realtime
+          </p>
+
+          <div class="mt-7 grid gap-4 sm:grid-cols-4">
+            <div class="soft-card p-4">
+              <p class="text-sm text-violet-300">หุ้นทั้งหมด</p>
+              <p id="totalStocks" class="mt-2 text-3xl font-extrabold text-white">0</p>
+            </div>
+            <div class="soft-card p-4">
+              <p class="text-sm text-violet-300">สัญญาณขึ้น</p>
+              <p id="upSignals" class="mt-2 text-3xl font-extrabold text-emerald-300">0</p>
+            </div>
+            <div class="soft-card p-4">
+              <p class="text-sm text-violet-300">Options Rank สูง</p>
+              <p id="optionHotCount" class="mt-2 text-3xl font-extrabold text-pink-200">0</p>
+            </div>
+            <div class="soft-card p-4">
+              <p class="text-sm text-violet-300">เสี่ยงสูง</p>
+              <p id="riskCount" class="mt-2 text-3xl font-extrabold text-rose-300">0</p>
+            </div>
+          </div>
+
+          <div class="mt-7 flex flex-col gap-3 sm:flex-row">
+            <a href="#dashboard" class="btn-primary rounded-2xl px-6 py-3 text-center font-bold">
+              <i class="fa-solid fa-chart-simple mr-2" aria-hidden="true"></i>ดู Dashboard
+            </a>
+            <a href="#options" class="btn-ghost rounded-2xl px-6 py-3 text-center font-bold text-violet-100">
+              <i class="fa-solid fa-bolt-lightning mr-2" aria-hidden="true"></i>หุ้น Option วันนี้
+            </a>
+          </div>
+          <p class="mt-4 text-xs leading-6 text-violet-300">
+            ข้อมูลเป็นตัวช่วยวิเคราะห์เบื้องต้น ไม่ใช่คำแนะนำการลงทุนจริง การเล่น Options มีความเสี่ยงสูงมาก ควรกำหนดเงินที่ยอมขาดทุนได้เสมอ
+          </p>
+        </article>
+
+        <aside class="glass-card p-6" aria-label="Top momentum">
+          <div class="mb-5 flex items-start justify-between gap-4">
+            <div>
+              <p class="text-sm text-violet-300">Market Pulse</p>
+              <h2 class="mt-1 text-2xl font-extrabold text-white">Top Momentum</h2>
+            </div>
+            <span class="rounded-2xl bg-violet-500/20 px-3 py-2 text-violet-100">
+              <i class="fa-solid fa-satellite-dish" aria-hidden="true"></i>
+            </span>
+          </div>
+          <div id="momentumList" class="space-y-4" aria-live="polite"></div>
+          <div class="mt-5 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-violet-200">
+            <div class="mb-2 flex items-center justify-between">
+              <span>Last updated</span>
+              <span id="lastUpdated" class="text-cyan-100">ยังไม่โหลด</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span>Next auto refresh</span>
+              <span id="refreshCountdown" class="text-emerald-200">60s</span>
+            </div>
+          </div>
+        </aside>
       </div>
-
-      <aside class="glass-card p-5" aria-label="สรุปตลาด">
-        <div class="flex items-start justify-between gap-4">
-          <div>
-            <p class="text-sm text-violet-300">Market Pulse</p>
-            <h2 class="mt-1 text-2xl font-extrabold text-white">ภาพรวม Watchlist</h2>
-          </div>
-          <span class="rounded-2xl bg-violet-500/20 px-3 py-2 text-violet-100">
-            <i class="fa-solid fa-satellite-dish" aria-hidden="true"></i>
-          </span>
-        </div>
-
-        <div class="mt-6 grid gap-4 sm:grid-cols-3">
-          <div class="soft-card p-4">
-            <p class="text-sm text-violet-300">หุ้นทั้งหมด</p>
-            <p id="totalStocks" class="mt-2 text-3xl font-extrabold text-white">0</p>
-          </div>
-          <div class="soft-card p-4">
-            <p class="text-sm text-violet-300">สัญญาณขึ้น</p>
-            <p id="upSignals" class="mt-2 text-3xl font-extrabold text-emerald-300">0</p>
-          </div>
-          <div class="soft-card p-4">
-            <p class="text-sm text-violet-300">ความเสี่ยงสูง</p>
-            <p id="riskCount" class="mt-2 text-3xl font-extrabold text-rose-300">0</p>
-          </div>
-        </div>
-
-        <div class="mt-6 rounded-2xl border border-white/10 bg-black/20 p-4">
-          <div class="mb-3 flex items-center justify-between">
-            <span class="text-sm font-semibold text-violet-100">Top Momentum</span>
-            <span id="lastUpdated" class="text-xs text-violet-300">ยังไม่โหลด</span>
-          </div>
-          <div id="momentumList" class="space-y-3" aria-live="polite"></div>
-        </div>
-      </aside>
     </section>
 
     <section class="border-y border-white/10 bg-white/[0.03] py-3" aria-label="Ticker tape">
@@ -281,12 +347,62 @@
       </div>
     </section>
 
+    <section id="dashboard" class="mx-auto max-w-7xl px-4 py-12 lg:px-8">
+      <div class="mb-7 flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
+        <div>
+          <p class="mb-2 text-sm font-semibold uppercase tracking-[0.28em] text-cyan-200">Professional Dashboard</p>
+          <h2 class="neon-line text-3xl font-extrabold text-white">กราฟราคาและภาพรวมตลาด</h2>
+          <p class="mt-5 max-w-2xl text-violet-200">เลือกหุ้นเพื่อดูกราฟ 30 วัน ถ้า API candles ใช้ไม่ได้ ระบบจะสร้างกราฟ Demo จากราคาล่าสุดให้ดูชั่วคราว</p>
+        </div>
+        <div class="flex flex-col gap-3 sm:flex-row">
+          <select id="chartSymbolSelect" class="rounded-2xl border border-white/10 bg-[#140e28] px-4 py-3 text-white" aria-label="เลือกหุ้นสำหรับกราฟ"></select>
+          <button id="loadChartBtn" class="btn-primary rounded-2xl px-5 py-3 font-bold" type="button">
+            <i class="fa-solid fa-chart-area mr-2" aria-hidden="true"></i>โหลดกราฟ
+          </button>
+        </div>
+      </div>
+
+      <div class="grid gap-6 xl:grid-cols-[1.45fr_.55fr]">
+        <article class="glass-card chart-card p-5">
+          <div class="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+            <div>
+              <p id="chartCompany" class="text-sm text-violet-300">เลือกหุ้นเพื่อดูกราฟ</p>
+              <h3 id="chartTitle" class="text-2xl font-extrabold text-white">Price Chart</h3>
+            </div>
+            <div class="flex flex-wrap gap-2 text-sm">
+              <span id="chartPrice" class="chip px-3 py-2 text-white">$0.00</span>
+              <span id="chartChange" class="chip px-3 py-2 text-violet-100">0.00%</span>
+              <span class="chip px-3 py-2 text-violet-100">30D</span>
+            </div>
+          </div>
+          <canvas id="priceChart" width="1000" height="320" aria-label="กราฟราคาหุ้น" role="img"></canvas>
+          <div class="mt-4 grid gap-3 sm:grid-cols-4">
+            <div class="soft-card p-3"><p class="text-xs text-violet-300">Support</p><p id="chartSupport" class="mt-1 font-extrabold text-emerald-200">-</p></div>
+            <div class="soft-card p-3"><p class="text-xs text-violet-300">Resistance</p><p id="chartResistance" class="mt-1 font-extrabold text-rose-200">-</p></div>
+            <div class="soft-card p-3"><p class="text-xs text-violet-300">AI Score</p><p id="chartScore" class="mt-1 font-extrabold text-cyan-100">-</p></div>
+            <div class="soft-card p-3"><p class="text-xs text-violet-300">Signal</p><p id="chartSignal" class="mt-1 font-extrabold text-amber-100">-</p></div>
+          </div>
+        </article>
+
+        <aside class="glass-card p-5">
+          <div class="mb-4 flex items-center justify-between gap-3">
+            <div>
+              <p class="text-sm text-violet-300">AI Market Note</p>
+              <h3 class="text-2xl font-extrabold text-white">สรุปวันนี้</h3>
+            </div>
+            <span class="rounded-2xl bg-cyan-300/10 px-3 py-2 text-cyan-200"><i class="fa-solid fa-brain" aria-hidden="true"></i></span>
+          </div>
+          <div id="marketNote" class="space-y-3 text-sm leading-7 text-violet-200"></div>
+        </aside>
+      </div>
+    </section>
+
     <section id="watchlist" class="mx-auto max-w-7xl px-4 py-12 lg:px-8">
       <div class="mb-7 flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
         <div>
           <p class="mb-2 text-sm font-semibold uppercase tracking-[0.28em] text-cyan-200">Watchlist</p>
-          <h2 class="neon-line text-3xl font-extrabold text-white">หุ้นชั้นนำของอเมริกา</h2>
-          <p class="mt-5 max-w-2xl text-violet-200">เพิ่มหุ้นที่ต้องการเองได้ ข้อมูลจะบันทึกไว้ใน Local Storage ของเบราว์เซอร์</p>
+          <h2 class="neon-line text-3xl font-extrabold text-white">หุ้นที่ติดตาม</h2>
+          <p class="mt-5 max-w-2xl text-violet-200">เพิ่ม/ลบหุ้นได้ ข้อมูลจะจำถาวรใน Browser เดิมด้วย Local Storage ถ้าต้องการจำข้ามเครื่องต้องต่อฐานข้อมูล เช่น Supabase ภายหลัง</p>
         </div>
 
         <form id="addStockForm" class="glass-card grid gap-3 p-3 sm:grid-cols-[1fr_auto]" aria-label="เพิ่มหุ้นใหม่">
@@ -312,11 +428,42 @@
           <option value="neutral">รอดูทิศทาง</option>
         </select>
         <button id="resetBtn" class="btn-ghost rounded-2xl px-5 py-3 font-semibold text-violet-100" type="button">
-          <i class="fa-solid fa-rotate-left mr-2" aria-hidden="true"></i>รีเซ็ต
+          <i class="fa-solid fa-rotate-left mr-2" aria-hidden="true"></i>รีเซ็ตหุ้นเพิ่มเอง
         </button>
       </div>
 
       <div id="stockCards" class="grid gap-5 md:grid-cols-2 xl:grid-cols-3" aria-live="polite"></div>
+    </section>
+
+    <section id="marketTable" class="mx-auto max-w-7xl px-4 py-12 lg:px-8">
+      <div class="mb-7 flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
+        <div>
+          <p class="mb-2 text-sm font-semibold uppercase tracking-[0.28em] text-violet-200">TradingView Style</p>
+          <h2 class="neon-line text-3xl font-extrabold text-white">ตารางหุ้นแบบโปร</h2>
+          <p class="mt-5 max-w-2xl text-violet-200">เรียงข้อมูลเหมือน Watchlist จริง ดูราคา %Change, Score, Risk, Options Rank, Signal และกดดูกราฟได้ทันที</p>
+        </div>
+      </div>
+      <div class="glass-card p-4">
+        <div class="table-wrap">
+          <table class="market-table" aria-label="ตารางหุ้น">
+            <thead>
+              <tr>
+                <th>Symbol</th>
+                <th>Company</th>
+                <th>Sector</th>
+                <th>Price</th>
+                <th>% Change</th>
+                <th>AI Score</th>
+                <th>Risk</th>
+                <th>Options Rank</th>
+                <th>Signal</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="stockTableBody"></tbody>
+          </table>
+        </div>
+      </div>
     </section>
 
     <section id="news" class="mx-auto max-w-7xl px-4 py-12 lg:px-8">
@@ -332,7 +479,7 @@
             </div>
           </div>
           <p class="leading-8 text-violet-100">
-            หน้านี้เรียกข่าวผ่าน <strong>/api/news?symbol=...</strong> แล้วประเมิน Sentiment เบื้องต้นจากคำในหัวข้อข่าว เช่น upgrade, growth, risk, downgrade และ selloff
+            ระบบประเมิน Sentiment จากหัวข้อข่าว แล้วนำไปผสมกับราคา Momentum และความผันผวน เพื่อช่วยอ่านทิศทางหุ้นแบบรวดเร็ว
           </p>
           <div class="mt-6 grid gap-3">
             <div class="soft-card p-4">
@@ -364,20 +511,20 @@
       <div class="mb-7 flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
         <div>
           <p class="mb-2 text-sm font-semibold uppercase tracking-[0.28em] text-pink-200">Options Radar</p>
-          <h2 class="neon-line text-3xl font-extrabold text-white">หุ้นสำหรับเล่น Options</h2>
-          <p class="mt-5 max-w-2xl text-violet-200">คัดหุ้นขนาดเล็ก/กลางที่มีความเคลื่อนไหวแรง เหมาะกับการวางแผนกลยุทธ์ Options แบบจำกัดความเสี่ยง</p>
+          <h2 class="neon-line text-3xl font-extrabold text-white">หุ้นน่าเล่น Option วันนี้</h2>
+          <p class="mt-5 max-w-2xl text-violet-200">คัดจาก Momentum, ข่าว, Volatility และ Options Rank พร้อมกลยุทธ์ Call / Put / Spread แบบจำกัดความเสี่ยง</p>
         </div>
         <div class="chip px-4 py-2 text-sm text-violet-100">
           <i class="fa-solid fa-shield-halved mr-2 text-amber-200" aria-hidden="true"></i>High risk / High volatility
         </div>
       </div>
+      <div id="optionTodayList" class="mb-6 grid gap-5 lg:grid-cols-3"></div>
       <div id="optionCards" class="grid gap-5 md:grid-cols-2 xl:grid-cols-3" aria-live="polite"></div>
     </section>
-
   </main>
 
   <footer class="border-t border-white/10 px-4 py-8 text-center text-sm text-violet-300 lg:px-8">
-    <p><strong class="text-white">ดูหุ้น วิเคราะห์หุ้น อเมริกา</strong> © <span id="year"></span> — Vercel Version</p>
+    <p><strong class="text-white">Midnight Stock AI Dashboard</strong> © <span id="year"></span> — Vercel Version</p>
     <p class="mt-2">สร้างเพื่อการศึกษาและวิเคราะห์เบื้องต้น ไม่ใช่คำแนะนำทางการเงิน</p>
   </footer>
 
@@ -386,7 +533,8 @@
   <script>
     'use strict';
 
-    const STORAGE_KEY = 'mp_google_script_custom_symbols_v1';
+    const STORAGE_KEY = 'mp_vercel_custom_symbols_v3';
+    const REFRESH_SECONDS = 60;
 
     const leadingStocks = [
       { symbol: 'AAPL', name: 'Apple Inc.', sector: 'Technology', basePrice: 184.60, beta: 1.2, optionRank: 78, cap: 'Mega Cap' },
@@ -418,14 +566,20 @@
 
     const state = {
       stocks: [],
+      chartData: [],
+      selectedChartSymbol: 'NVDA',
       isLoading: false,
       search: '',
-      signalFilter: 'all'
+      signalFilter: 'all',
+      refreshLeft: REFRESH_SECONDS,
+      refreshTimer: null,
+      countdownTimer: null
     };
 
     const $ = (selector) => document.querySelector(selector);
     const stockCards = $('#stockCards');
     const optionCards = $('#optionCards');
+    const optionTodayList = $('#optionTodayList');
     const newsList = $('#newsList');
     const tickerTape = $('#tickerTape');
     const toast = $('#toast');
@@ -436,6 +590,7 @@
       $('#year').textContent = new Date().getFullYear();
       setupEvents();
       loadStocks();
+      startAutoRefresh();
     }
 
     function setupEvents() {
@@ -451,6 +606,8 @@
         renderAll();
       });
       $('#resetBtn').addEventListener('click', resetStocks);
+      $('#loadChartBtn').addEventListener('click', () => loadChart($('#chartSymbolSelect').value));
+      $('#chartSymbolSelect').addEventListener('change', (event) => loadChart(event.target.value));
 
       document.querySelectorAll('#mainMenu a').forEach((link) => {
         link.addEventListener('click', () => {
@@ -460,13 +617,26 @@
       });
     }
 
+    function startAutoRefresh() {
+      clearInterval(state.countdownTimer);
+      state.refreshLeft = REFRESH_SECONDS;
+      state.countdownTimer = setInterval(() => {
+        state.refreshLeft -= 1;
+        $('#refreshCountdown').textContent = `${state.refreshLeft}s`;
+        if (state.refreshLeft <= 0) {
+          state.refreshLeft = REFRESH_SECONDS;
+          loadStocks(true, true);
+        }
+      }, 1000);
+    }
+
     function toggleMobileMenu() {
       const menu = $('#mainMenu');
       const isHidden = menu.classList.toggle('hidden');
       $('#mobileMenuBtn').setAttribute('aria-expanded', String(!isHidden));
     }
 
-    async function loadStocks(forceRefresh = false) {
+    async function loadStocks(forceRefresh = false, silent = false) {
       setLoading(true);
       try {
         const allBase = mergeUniqueStocks([...leadingStocks, ...getCustomStocks()]);
@@ -479,13 +649,16 @@
 
         state.stocks = enriched;
         renderAll();
-        showToast('โหลดข้อมูลจาก Vercel API แล้ว');
+        await loadChart(state.selectedChartSymbol || enriched[0]?.symbol || 'NVDA', true);
+        if (!silent) showToast('อัปเดตข้อมูลจาก Vercel API แล้ว');
       } catch (error) {
         console.error(error);
         state.stocks = mergeUniqueStocks([...leadingStocks, ...getCustomStocks()]).map((stock) => enrichStock(stock, null, null, true));
         renderAll();
-        showToast('โหลด API ไม่สำเร็จ จึงใช้ Demo Mode ชั่วคราว');
+        await loadChart(state.selectedChartSymbol || 'NVDA', true);
+        if (!silent) showToast('API ไม่สำเร็จ ใช้ Demo Mode ชั่วคราว');
       } finally {
+        state.refreshLeft = REFRESH_SECONDS;
         setLoading(false);
       }
     }
@@ -507,6 +680,51 @@
       }
     }
 
+    async function loadChart(symbol, silent = false) {
+      if (!symbol) return;
+      state.selectedChartSymbol = symbol;
+      const stock = state.stocks.find((item) => item.symbol === symbol) || state.stocks[0];
+      if (!stock) return;
+
+      try {
+        const response = await fetch('/api/candles?symbol=' + encodeURIComponent(symbol));
+        const data = response.ok ? await response.json() : null;
+        const values = normalizeCandles(data, stock);
+        state.chartData = values;
+        renderChart(stock, values);
+        if (!silent) showToast(`โหลดกราฟ ${symbol} แล้ว`);
+      } catch (error) {
+        const values = createDemoCandles(stock);
+        state.chartData = values;
+        renderChart(stock, values);
+      }
+    }
+
+    function normalizeCandles(data, stock) {
+      if (data && data.s === 'ok' && Array.isArray(data.c) && data.c.length > 2) {
+        return data.c.slice(-30).map((price, index) => ({
+          price: Number(price),
+          label: data.t && data.t[index] ? new Date(data.t[index] * 1000).toLocaleDateString('th-TH', { day: '2-digit', month: 'short' }) : `${index + 1}`
+        })).filter((item) => Number.isFinite(item.price));
+      }
+      return createDemoCandles(stock);
+    }
+
+    function createDemoCandles(stock) {
+      const seed = stringSeed(stock.symbol + 'chart');
+      const values = [];
+      let price = Number(stock.price || stock.basePrice || 100) * (0.94 + (seed % 8) / 100);
+      for (let i = 0; i < 30; i += 1) {
+        const wave = Math.sin((i + seed % 9) / 3) * 0.012;
+        const drift = (stock.percent || 0) / 100 / 30;
+        const noise = (((seed + i * 13) % 11) - 5) / 1000;
+        price = Math.max(0.5, price * (1 + wave + drift + noise));
+        values.push({ price: round(price, 2), label: `${i + 1}` });
+      }
+      values[values.length - 1].price = Number(stock.price || values[values.length - 1].price);
+      return values;
+    }
+
     function setLoading(isLoading) {
       state.isLoading = isLoading;
       $('#refreshBtn').disabled = isLoading;
@@ -514,10 +732,11 @@
         ? '<i class="fa-solid fa-spinner fa-spin mr-2" aria-hidden="true"></i>กำลังโหลด'
         : '<i class="fa-solid fa-rotate-right mr-2" aria-hidden="true"></i>รีเฟรชข้อมูล';
 
-      if (isLoading) {
+      if (isLoading && !state.stocks.length) {
         stockCards.innerHTML = createSkeletonCards(6);
         newsList.innerHTML = createNewsSkeleton();
         optionCards.innerHTML = createSkeletonCards(3);
+        $('#stockTableBody').innerHTML = '<tr><td colspan="10" class="text-center text-violet-300">กำลังโหลดข้อมูล...</td></tr>';
       }
     }
 
@@ -547,7 +766,8 @@
         signal,
         support,
         resistance,
-        risk: volatility > 72 ? 'สูง' : volatility > 50 ? 'กลาง' : 'ต่ำ'
+        risk: volatility > 72 ? 'สูง' : volatility > 50 ? 'กลาง' : 'ต่ำ',
+        optionStrategy: buildOptionStrategy({ ...stock, signal, volatility, percent, score })
       };
     }
 
@@ -612,9 +832,13 @@
       renderStats();
       renderTicker();
       renderMomentum();
+      renderMarketNote();
+      renderChartSelect();
       renderStocks(filtered);
+      renderStockTable(filtered);
       renderNews();
       renderOptions();
+      renderOptionToday();
       $('#lastUpdated').textContent = new Date().toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' });
     }
 
@@ -630,6 +854,7 @@
       $('#totalStocks').textContent = state.stocks.length;
       $('#upSignals').textContent = state.stocks.filter((stock) => stock.signal === 'up').length;
       $('#riskCount').textContent = state.stocks.filter((stock) => stock.risk === 'สูง').length;
+      $('#optionHotCount').textContent = state.stocks.filter((stock) => stock.optionRank >= 85).length;
     }
 
     function renderTicker() {
@@ -649,17 +874,116 @@
     }
 
     function renderMomentum() {
-      const top = [...state.stocks].sort((a, b) => b.score - a.score).slice(0, 4);
+      const top = [...state.stocks].sort((a, b) => b.score - a.score).slice(0, 5);
       $('#momentumList').innerHTML = top.map((stock) => `
-        <div class="flex items-center justify-between gap-4">
-          <div class="min-w-0">
-            <p class="truncate font-bold text-white">${escapeHtml(stock.symbol)} <span class="font-normal text-violet-300">${escapeHtml(stock.name)}</span></p>
-            <div class="mt-2 h-2 overflow-hidden rounded-full bg-white/10" aria-label="คะแนน ${stock.score} จาก 100">
-              <div class="h-full rounded-full bg-gradient-to-r from-violet-500 to-cyan-300" style="width:${stock.score}%"></div>
+        <button class="w-full rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-left transition hover:border-cyan-300/40 hover:bg-white/[0.08]" type="button" onclick="jumpToChart('${stock.symbol}')">
+          <div class="flex items-center justify-between gap-4">
+            <div class="min-w-0">
+              <p class="truncate font-bold text-white">${escapeHtml(stock.symbol)} <span class="font-normal text-violet-300">${escapeHtml(stock.name)}</span></p>
+              <div class="mt-2 h-2 overflow-hidden rounded-full bg-white/10" aria-label="คะแนน ${stock.score} จาก 100">
+                <div class="h-full rounded-full bg-gradient-to-r from-violet-500 to-cyan-300" style="width:${stock.score}%"></div>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="block text-lg font-extrabold text-cyan-100">${stock.score}</span>
+              <span class="${stock.percent >= 0 ? 'text-emerald-300' : 'text-rose-300'} text-xs">${formatPercent(stock.percent)}</span>
             </div>
           </div>
-          <span class="text-lg font-extrabold text-cyan-100">${stock.score}</span>
-        </div>`).join('');
+        </button>`).join('');
+    }
+
+    function renderMarketNote() {
+      const top = [...state.stocks].sort((a, b) => b.score - a.score)[0];
+      const weakest = [...state.stocks].sort((a, b) => a.score - b.score)[0];
+      const hotOptions = [...state.stocks].filter((s) => s.optionRank >= 85).sort((a, b) => b.optionRank - a.optionRank).slice(0, 3);
+      $('#marketNote').innerHTML = `
+        <div class="soft-card p-4"><strong class="text-cyan-100">หุ้น Momentum เด่น:</strong> ${top ? `${escapeHtml(top.symbol)} คะแนน ${top.score} (${formatPercent(top.percent)})` : '-'}</div>
+        <div class="soft-card p-4"><strong class="text-rose-100">หุ้นที่ต้องระวัง:</strong> ${weakest ? `${escapeHtml(weakest.symbol)} คะแนน ${weakest.score} (${formatPercent(weakest.percent)})` : '-'}</div>
+        <div class="soft-card p-4"><strong class="text-pink-100">Options Watch:</strong> ${hotOptions.length ? hotOptions.map((s) => s.symbol).join(', ') : '-'}</div>
+        <div class="rounded-2xl border border-amber-300/20 bg-amber-300/10 p-4 text-amber-100">ควรดู Volume, IV และ Bid/Ask Spread ก่อนเปิดสถานะ Options ทุกครั้ง</div>`;
+    }
+
+    function renderChartSelect() {
+      const options = state.stocks.map((stock) => `<option value="${escapeAttr(stock.symbol)}" ${stock.symbol === state.selectedChartSymbol ? 'selected' : ''}>${escapeHtml(stock.symbol)} — ${escapeHtml(stock.name)}</option>`).join('');
+      $('#chartSymbolSelect').innerHTML = options;
+    }
+
+    function renderChart(stock, values) {
+      if (!stock || !values.length) return;
+      $('#chartCompany').textContent = stock.name;
+      $('#chartTitle').textContent = `${stock.symbol} Price Chart`;
+      $('#chartPrice').textContent = `$${formatNumber(stock.price)}`;
+      $('#chartChange').textContent = formatPercent(stock.percent);
+      $('#chartChange').className = `chip px-3 py-2 ${stock.percent >= 0 ? 'text-emerald-300' : 'text-rose-300'}`;
+      $('#chartSupport').textContent = `$${formatNumber(stock.support)}`;
+      $('#chartResistance').textContent = `$${formatNumber(stock.resistance)}`;
+      $('#chartScore').textContent = stock.score;
+      $('#chartSignal').textContent = getSignalMeta(stock.signal).label;
+
+      const canvas = $('#priceChart');
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width;
+      const height = canvas.height;
+      const pad = 36;
+      const prices = values.map((item) => Number(item.price)).filter(Number.isFinite);
+      const min = Math.min(...prices);
+      const max = Math.max(...prices);
+      const range = Math.max(max - min, 1);
+
+      ctx.clearRect(0, 0, width, height);
+
+      const grad = ctx.createLinearGradient(0, 0, 0, height);
+      grad.addColorStop(0, 'rgba(124, 58, 237, 0.20)');
+      grad.addColorStop(1, 'rgba(34, 211, 238, 0.02)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 5; i += 1) {
+        const y = pad + ((height - pad * 2) / 4) * i;
+        ctx.beginPath();
+        ctx.moveTo(pad, y);
+        ctx.lineTo(width - pad, y);
+        ctx.stroke();
+      }
+
+      const points = values.map((item, index) => {
+        const x = pad + ((width - pad * 2) / Math.max(values.length - 1, 1)) * index;
+        const y = height - pad - ((item.price - min) / range) * (height - pad * 2);
+        return { x, y, price: item.price };
+      });
+
+      ctx.beginPath();
+      points.forEach((point, index) => {
+        if (index === 0) ctx.moveTo(point.x, point.y);
+        else ctx.lineTo(point.x, point.y);
+      });
+      ctx.strokeStyle = stock.percent >= 0 ? '#34d399' : '#fb7185';
+      ctx.lineWidth = 4;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      ctx.stroke();
+
+      ctx.lineTo(points[points.length - 1].x, height - pad);
+      ctx.lineTo(points[0].x, height - pad);
+      ctx.closePath();
+      const areaGrad = ctx.createLinearGradient(0, pad, 0, height - pad);
+      areaGrad.addColorStop(0, stock.percent >= 0 ? 'rgba(52,211,153,.22)' : 'rgba(251,113,133,.22)');
+      areaGrad.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = areaGrad;
+      ctx.fill();
+
+      const last = points[points.length - 1];
+      ctx.fillStyle = stock.percent >= 0 ? '#34d399' : '#fb7185';
+      ctx.beginPath();
+      ctx.arc(last.x, last.y, 7, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = 'rgba(248,247,255,.85)';
+      ctx.font = '16px Noto Sans Thai';
+      ctx.fillText(`High $${formatNumber(max)}`, pad, 24);
+      ctx.fillText(`Low $${formatNumber(min)}`, pad, height - 12);
     }
 
     function renderStocks(stocks) {
@@ -692,7 +1016,7 @@
             <div class="space-y-5 p-5">
               <div class="grid grid-cols-3 gap-3 text-center">
                 <div class="soft-card p-3"><p class="text-xs text-violet-300">Score</p><p class="mt-1 text-xl font-extrabold text-cyan-100">${stock.score}</p></div>
-                <div class="soft-card p-3"><p class="text-xs text-violet-300">Volatility</p><p class="mt-1 text-xl font-extrabold text-pink-200">${stock.volatility}</p></div>
+                <div class="soft-card p-3"><p class="text-xs text-violet-300">Options</p><p class="mt-1 text-xl font-extrabold text-pink-200">${stock.optionRank}</p></div>
                 <div class="soft-card p-3"><p class="text-xs text-violet-300">Risk</p><p class="mt-1 text-xl font-extrabold text-amber-200">${stock.risk}</p></div>
               </div>
 
@@ -703,31 +1027,55 @@
                 <span class="text-sm text-violet-300">${escapeHtml(stock.sector)}</span>
               </div>
 
-              <div class="grid gap-3 sm:grid-cols-2">
-                <div class="rounded-2xl bg-emerald-300/10 p-3 text-sm text-emerald-100"><span class="block text-xs text-emerald-200/80">แนวรับประมาณ</span><strong>$${formatNumber(stock.support)}</strong></div>
-                <div class="rounded-2xl bg-rose-300/10 p-3 text-sm text-rose-100"><span class="block text-xs text-rose-200/80">แนวต้านประมาณ</span><strong>$${formatNumber(stock.resistance)}</strong></div>
-              </div>
-
               <div class="rounded-2xl border border-white/10 bg-black/20 p-4">
                 <p class="mb-2 text-sm font-bold text-violet-100"><i class="fa-solid fa-lightbulb mr-2 text-cyan-200" aria-hidden="true"></i>สรุป AI</p>
                 <p class="text-sm leading-7 text-violet-200">${buildInsight(stock)}</p>
               </div>
 
               <div class="flex gap-2">
-                <button type="button" class="btn-ghost flex-1 rounded-xl px-4 py-2 text-sm font-semibold text-violet-100" onclick="focusStockNews('${stock.symbol}')">
-                  <i class="fa-solid fa-newspaper mr-2" aria-hidden="true"></i>ดูข่าว
+                <button type="button" class="btn-ghost flex-1 rounded-xl px-4 py-2 text-sm font-semibold text-violet-100" onclick="jumpToChart('${stock.symbol}')">
+                  <i class="fa-solid fa-chart-area mr-2" aria-hidden="true"></i>ดูกราฟ
                 </button>
-                ${custom ? `<button type="button" class="btn-ghost rounded-xl px-4 py-2 text-sm font-semibold text-rose-200" onclick="removeCustomStock('${stock.symbol}')" aria-label="ลบหุ้น ${stock.symbol}"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>` : ''}
+                ${custom ? `<button type="button" class="btn-ghost rounded-xl px-4 py-2 text-sm font-semibold text-rose-200" onclick="removeCustomStock('${stock.symbol}')" aria-label="ลบหุ้น ${stock.symbol}"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button>` : ''}
               </div>
             </div>
           </article>`;
       }).join('');
     }
 
+    function renderStockTable(stocks) {
+      if (!stocks.length) {
+        $('#stockTableBody').innerHTML = '<tr><td colspan="10" class="text-center text-violet-300">ไม่พบข้อมูล</td></tr>';
+        return;
+      }
+      $('#stockTableBody').innerHTML = stocks.map((stock) => {
+        const status = getSignalMeta(stock.signal);
+        const custom = !leadingStocks.some((item) => item.symbol === stock.symbol);
+        return `
+          <tr>
+            <td><button class="font-extrabold text-cyan-100 hover:underline" type="button" onclick="jumpToChart('${stock.symbol}')">${escapeHtml(stock.symbol)}</button></td>
+            <td><span class="text-white">${escapeHtml(stock.name)}</span></td>
+            <td class="text-violet-300">${escapeHtml(stock.sector)}</td>
+            <td class="font-bold text-white">$${formatNumber(stock.price)}</td>
+            <td class="font-bold ${stock.percent >= 0 ? 'text-emerald-300' : 'text-rose-300'}">${formatPercent(stock.percent)}</td>
+            <td class="text-cyan-100 font-bold">${stock.score}</td>
+            <td class="text-amber-100">${stock.risk}</td>
+            <td class="text-pink-200 font-bold">${stock.optionRank}</td>
+            <td><span class="inline-flex items-center rounded-full border px-3 py-1 text-xs font-bold ${status.className}">${status.label}</span></td>
+            <td>
+              <div class="flex gap-2">
+                <button class="btn-ghost rounded-xl px-3 py-2 text-xs text-violet-100" type="button" onclick="jumpToChart('${stock.symbol}')">Chart</button>
+                ${custom ? `<button class="btn-ghost rounded-xl px-3 py-2 text-xs text-rose-200" type="button" onclick="removeCustomStock('${stock.symbol}')">Delete</button>` : ''}
+              </div>
+            </td>
+          </tr>`;
+      }).join('');
+    }
+
     function renderNews() {
       const news = state.stocks.flatMap((stock) => stock.news.map((item) => ({ ...item, stock }))).slice(0, 8);
       if (!news.length) {
-        newsList.innerHTML = emptyState('ยังไม่มีข่าว', 'ตรวจสอบ Code.gs หรือกดรีเฟรชอีกครั้ง');
+        newsList.innerHTML = emptyState('ยังไม่มีข่าว', 'ตรวจสอบ API หรือกดรีเฟรชอีกครั้ง');
         return;
       }
 
@@ -754,15 +1102,42 @@
       }).join('');
     }
 
+    function renderOptionToday() {
+      const topOptions = [...state.stocks]
+        .filter((stock) => stock.optionRank >= 78)
+        .sort((a, b) => (b.optionRank + b.score) - (a.optionRank + a.score))
+        .slice(0, 3);
+
+      optionTodayList.innerHTML = topOptions.map((stock, index) => {
+        const strategy = getOptionPlay(stock);
+        return `
+          <article class="glass-card p-5">
+            <div class="mb-4 flex items-start justify-between gap-4">
+              <div>
+                <p class="text-sm text-pink-200">Top Pick #${index + 1}</p>
+                <h3 class="text-3xl font-extrabold text-white">${escapeHtml(stock.symbol)}</h3>
+                <p class="text-sm text-violet-300">${escapeHtml(stock.name)}</p>
+              </div>
+              <span class="rounded-2xl bg-pink-300/10 px-3 py-2 text-pink-100"><i class="fa-solid fa-fire" aria-hidden="true"></i></span>
+            </div>
+            <div class="mb-4 grid grid-cols-3 gap-3 text-center">
+              <div class="soft-card p-3"><p class="text-xs text-violet-300">Score</p><p class="font-extrabold text-cyan-100">${stock.score}</p></div>
+              <div class="soft-card p-3"><p class="text-xs text-violet-300">Rank</p><p class="font-extrabold text-pink-200">${stock.optionRank}</p></div>
+              <div class="soft-card p-3"><p class="text-xs text-violet-300">Vol</p><p class="font-extrabold text-amber-100">${stock.volatility}</p></div>
+            </div>
+            <p class="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm leading-7 text-violet-200">${escapeHtml(strategy)}</p>
+          </article>`;
+      }).join('') || emptyState('ยังไม่มีหุ้น Options เด่น', 'รอข้อมูลเพิ่มเติมหรือเพิ่มหุ้นที่ต้องการติดตาม');
+    }
+
     function renderOptions() {
-      const optionData = optionCandidates.map((candidate) => {
-        const existing = state.stocks.find((stock) => stock.symbol === candidate.symbol);
-        return existing || enrichStock(candidate, null, null);
-      }).sort((a, b) => b.optionRank - a.optionRank);
+      const optionData = mergeUniqueStocks([...optionCandidates, ...state.stocks.filter((s) => s.optionRank >= 80)])
+        .map((candidate) => state.stocks.find((stock) => stock.symbol === candidate.symbol) || enrichStock(candidate, null, null))
+        .sort((a, b) => b.optionRank - a.optionRank);
 
       optionCards.innerHTML = optionData.map((stock) => {
         const status = getSignalMeta(stock.signal);
-        const candidate = optionCandidates.find((item) => item.symbol === stock.symbol) || {};
+        const strategy = getOptionPlay(stock);
         return `
           <article class="glass-card p-5" tabindex="0" aria-label="หุ้น Options ${escapeHtml(stock.symbol)}">
             <div class="mb-4 flex items-start justify-between gap-4">
@@ -779,9 +1154,9 @@
             <span class="mb-4 inline-flex items-center rounded-full border px-4 py-2 text-sm font-bold ${status.className}">
               <i class="fa-solid ${status.icon} mr-2" aria-hidden="true"></i>${status.label}
             </span>
-            <p class="text-sm leading-7 text-violet-200">${escapeHtml(candidate.strategy || buildOptionStrategy(stock))}</p>
+            <p class="text-sm leading-7 text-violet-200">${escapeHtml(strategy)}</p>
             <div class="mt-4 rounded-2xl border border-amber-300/20 bg-amber-300/10 p-3 text-sm leading-6 text-amber-100">
-              <i class="fa-solid fa-circle-info mr-2" aria-hidden="true"></i>ควรตรวจ IV, Volume, Bid/Ask Spread และวันหมดอายุก่อนเปิดสถานะ
+              <i class="fa-solid fa-circle-info mr-2" aria-hidden="true"></i>Realtime ใกล้เคียงจาก Quote API ไม่ใช่ Tick-by-tick ควรตรวจ IV, Volume, Bid/Ask Spread ในโบรกเกอร์ก่อนเทรดจริง
             </div>
           </article>`;
       }).join('');
@@ -816,15 +1191,15 @@
         cap: 'Custom'
       });
 
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(customStocks));
+      saveCustomStocks(customStocks);
       input.value = '';
-      showToast(`เพิ่ม ${symbol} แล้ว`);
+      showToast(`เพิ่ม ${symbol} และบันทึกถาวรใน Browser แล้ว`);
       loadStocks(true);
     }
 
     function removeCustomStock(symbol) {
       const customStocks = getCustomStocks().filter((stock) => stock.symbol !== symbol);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(customStocks));
+      saveCustomStocks(customStocks);
       showToast(`ลบ ${symbol} แล้ว`);
       loadStocks(true);
     }
@@ -835,19 +1210,15 @@
       $('#filterSignal').value = 'all';
       state.search = '';
       state.signalFilter = 'all';
-      showToast('รีเซ็ตรายการหุ้นแล้ว');
+      showToast('รีเซ็ตหุ้นที่เพิ่มเองแล้ว');
       loadStocks(true);
     }
 
-    function focusStockNews(symbol) {
-      const target = document.querySelector(`[data-news-symbol="${CSS.escape(symbol)}"]`);
-      if (target) {
-        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        target.focus({ preventScroll: true });
-        showToast(`แสดงข่าวของ ${symbol}`);
-      } else {
-        document.querySelector('#news').scrollIntoView({ behavior: 'smooth' });
-      }
+    function jumpToChart(symbol) {
+      state.selectedChartSymbol = symbol;
+      $('#chartSymbolSelect').value = symbol;
+      document.querySelector('#dashboard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      loadChart(symbol);
     }
 
     function getCustomStocks() {
@@ -857,6 +1228,10 @@
       } catch {
         return [];
       }
+    }
+
+    function saveCustomStocks(stocks) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(stocks));
     }
 
     function mergeUniqueStocks(stocks) {
@@ -886,9 +1261,20 @@
     }
 
     function buildOptionStrategy(stock) {
-      if (stock.signal === 'up') return 'พิจารณา Long Call หรือ Call Debit Spread เมื่อราคา Break แนวต้านพร้อม Volume สูงขึ้น';
-      if (stock.signal === 'down') return 'พิจารณา Long Put หรือ Put Debit Spread เฉพาะเมื่อหลุดแนวรับและตลาดรวมอ่อนตัว';
-      return 'รอดูทิศทาง หรือใช้กลยุทธ์จำกัดความเสี่ยง เช่น Iron Condor เมื่อ IV สูงและราคา Sideway';
+      return getOptionPlay(stock);
+    }
+
+    function getOptionPlay(stock) {
+      if (stock.signal === 'up' && stock.score >= 68) {
+        return `Call Bias: พิจารณา Long Call หรือ Call Debit Spread เมื่อ ${stock.symbol} ยืนเหนือแนวต้าน $${formatNumber(stock.resistance)} พร้อม Volume เพิ่มขึ้น จำกัดความเสี่ยงด้วย premium ที่รับได้`;
+      }
+      if (stock.signal === 'down' && stock.score <= 42) {
+        return `Put Bias: พิจารณา Long Put หรือ Put Debit Spread ถ้าราคาหลุดแนวรับ $${formatNumber(stock.support)} และตลาดรวมอ่อนตัว หลีกเลี่ยงการไล่ราคาเมื่อ IV พุ่งแรง`;
+      }
+      if (stock.volatility >= 72) {
+        return `Volatility Play: ความผันผวนสูง เหมาะกับ Spread ที่จำกัดขาดทุน เช่น Debit Spread หรือรอราคาเลือกทางก่อน ไม่ควรเปิด Naked Option`;
+      }
+      return `Neutral/Wait: รอ Breakout หรือ Breakdown ชัดเจน อาจใช้ Covered Call, Cash Secured Put หรือ Iron Condor เฉพาะกรณีราคาแกว่งในกรอบและเข้าใจความเสี่ยง`;
     }
 
     function createSkeletonCards(count) {
@@ -968,7 +1354,7 @@
     }
 
     window.removeCustomStock = removeCustomStock;
-    window.focusStockNews = focusStockNews;
+    window.jumpToChart = jumpToChart;
   </script>
 </body>
 </html>
