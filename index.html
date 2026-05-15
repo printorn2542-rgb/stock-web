@@ -751,16 +751,58 @@
     }
 
     function enrichStock(stock, quote, apiNews, forceRefresh = false) {
-      const seed = stringSeed(stock.symbol + new Date().toDateString() + (forceRefresh ? Date.now() : ''));
-      const demoPercent = round(((seed % 800) / 100) - 3.2, 2);
-      const price = quote && Number(quote.c) ? Number(quote.c) : round(stock.basePrice * (1 + demoPercent / 100), 2);
-      const percent = quote && Number.isFinite(Number(quote.dp)) ? Number(quote.dp) : demoPercent;
-      const change = quote && Number.isFinite(Number(quote.d)) ? Number(quote.d) : round(price * percent / 100, 2);
-      const volatility = Math.min(99, Math.max(18, Math.round(stock.beta * 28 + Math.abs(percent) * 7 + (seed % 18))));
-      const news = normalizeNews(stock, apiNews, seed);
+      const existing = state.stocks.find((item) => item.symbol === stock.symbol);
+
+      const isRealQuote =
+        quote &&
+        Number.isFinite(Number(quote.c)) &&
+        Number(quote.c) > 0;
+
+      // ใช้ seed แบบคงที่รายวัน ไม่ใช้ Date.now()
+      // ถ้า API ล่ม ราคา Demo จะไม่เปลี่ยนมั่วทุกครั้งที่กดรีเฟรช
+      const stableSeed = stringSeed(stock.symbol + new Date().toISOString().slice(0, 10));
+      const demoPercent = round(((stableSeed % 800) / 100) - 3.2, 2);
+
+      const fallbackPrice =
+        existing?.price ||
+        round(stock.basePrice * (1 + demoPercent / 100), 2);
+
+      const price = isRealQuote ? Number(quote.c) : fallbackPrice;
+
+      const percent =
+        isRealQuote && Number.isFinite(Number(quote.dp))
+          ? Number(quote.dp)
+          : existing?.percent ?? demoPercent;
+
+      const change =
+        isRealQuote && Number.isFinite(Number(quote.d))
+          ? Number(quote.d)
+          : round(price * percent / 100, 2);
+
+      const volatility = Math.min(
+        99,
+        Math.max(
+          18,
+          Math.round(stock.beta * 28 + Math.abs(percent) * 7 + (stableSeed % 18))
+        )
+      );
+
+      const news = normalizeNews(stock, apiNews, stableSeed);
       const sentiment = calculateSentiment(news);
-      const score = calculateScore(percent, sentiment, volatility, stock.optionRank);
-      const signal = score >= 62 ? 'up' : score <= 42 ? 'down' : 'neutral';
+
+      // ถ้าไม่ใช่ราคาจริงจาก API ให้คะแนนกลางและไม่ออกสัญญาณมั่นใจเกินไป
+      const score = isRealQuote
+        ? calculateScore(percent, sentiment, volatility, stock.optionRank)
+        : 50;
+
+      const signal = !isRealQuote
+        ? 'neutral'
+        : score >= 62
+          ? 'up'
+          : score <= 42
+            ? 'down'
+            : 'neutral';
+
       const support = round(price * (1 - (volatility / 1000 + .018)), 2);
       const resistance = round(price * (1 + (volatility / 1000 + .02)), 2);
 
@@ -776,8 +818,10 @@
         signal,
         support,
         resistance,
+        isRealQuote,
+        dataSource: isRealQuote ? 'API' : 'Demo',
         risk: volatility > 72 ? 'สูง' : volatility > 50 ? 'กลาง' : 'ต่ำ',
-        optionStrategy: buildOptionStrategy({ ...stock, signal, volatility, percent, score })
+        optionStrategy: buildOptionStrategy({ ...stock, signal, volatility, percent, score, isRealQuote })
       };
     }
 
@@ -1275,6 +1319,10 @@
     }
 
     function getOptionPlay(stock) {
+      if (stock.isRealQuote === false) {
+        return `Demo Mode: ยังไม่ได้รับราคาจริงจาก API สำหรับ ${stock.symbol} จึงไม่ออกสัญญาณ Call/Put จริง แนะนำตรวจ API ก่อนใช้งาน`;
+      }
+
       if (stock.signal === 'up' && stock.score >= 68) {
         return `Call Bias: พิจารณา Long Call หรือ Call Debit Spread เมื่อ ${stock.symbol} ยืนเหนือแนวต้าน $${formatNumber(stock.resistance)} พร้อม Volume เพิ่มขึ้น จำกัดความเสี่ยงด้วย premium ที่รับได้`;
       }
